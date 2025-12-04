@@ -13,9 +13,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ activeContext }) =
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Track if we've already triggered the Agent follow-up to avoid duplicates
+  const [agentFollowUpTriggered, setAgentFollowUpTriggered] = useState(false);
 
   // Initial greeting based on context
   useEffect(() => {
+    // Reset state when switching context
+    setAgentFollowUpTriggered(false);
+
     if (activeContext === NavItem.ASSETS) {
       setMessages([
         {
@@ -71,6 +77,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ activeContext }) =
           widgetType: 'diagnosis-alert'
         }
       ]);
+    } else if (activeContext === NavItem.AGENT) {
+      // New Agent with Smart Report
+      setMessages([
+        {
+          id: 'welcome-agent',
+          role: 'model',
+          text: '', // Text is inside the widget mostly, or we can add a brief greeting above
+          timestamp: new Date(),
+          type: 'widget',
+          widgetType: 'smart-report'
+        }
+      ]);
     } else {
       setMessages([
         {
@@ -93,8 +111,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ activeContext }) =
 
   // Demo Scenario Flow Handler
   const handleWidgetAction = (actionType: string, payload: any) => {
+    // === SCENARIO 0: Agent (Smart Report) ===
+    if (activeContext === NavItem.AGENT) {
+      handleAgentScenario(actionType, payload);
+    }
     // === SCENARIO 1: Assets (Material Generation) ===
-    if (activeContext === NavItem.ASSETS) {
+    else if (activeContext === NavItem.ASSETS) {
       handleAssetsScenario(actionType, payload);
     } 
     // === SCENARIO 2: Products (Product Management) ===
@@ -108,6 +130,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ activeContext }) =
     // === SCENARIO 4: Diagnosis (Business Diagnosis) ===
     else if (activeContext === NavItem.DIAGNOSIS) {
       handleDiagnosisScenario(actionType, payload);
+    }
+  };
+  
+  // --- Scenario Logic for AGENT (Smart Report) ---
+  const handleAgentScenario = (actionType: string, payload: any) => {
+    if (actionType === 'report_expanded' && !agentFollowUpTriggered) {
+      setAgentFollowUpTriggered(true);
+      setTimeout(() => {
+        addBotMessage({
+          id: 'agent-followup',
+          role: 'model',
+          text: '李老板，看到您的复购率是短板，且跨年季是巨大机会。对于下个月的经营，有什么新目标吗？',
+          timestamp: new Date()
+        });
+      }, 800);
     }
   };
 

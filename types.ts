@@ -8,7 +8,7 @@ export interface Message {
   timestamp: Date;
   // New fields for rich interactions
   type?: 'text' | 'widget';
-  widgetType?: 'data-binding' | 'material-selection' | 'image-upload' | 'style-selection' | 'copy-selection' | 'product-form' | 'simple-options' | 'upload-trigger' | 'marketing-plan' | 'optimization-decision' | 'campaign-report' | 'diagnosis-alert' | 'diagnosis-card';
+  widgetType?: 'data-binding' | 'material-selection' | 'image-upload' | 'style-selection' | 'copy-selection' | 'product-form' | 'simple-options' | 'upload-trigger' | 'marketing-plan' | 'optimization-decision' | 'campaign-report' | 'diagnosis-alert' | 'diagnosis-card' | 'smart-report';
   widgetData?: any; // Flexible data for specific widgets
 }
 

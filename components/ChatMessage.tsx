@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Message } from '../types';
-import { Bot, User, Link, Check, UploadCloud, Image as ImageIcon, CheckCircle2, PlayCircle, FileText, Monitor, LayoutTemplate, Layers, Wand2, Calculator, PackageCheck, ListPlus, TrendingUp, TrendingDown, Users, DollarSign, Target, BarChart3, PieChart, AlertTriangle, ArrowRight, Lightbulb } from 'lucide-react';
+import { Bot, User, Link, Check, UploadCloud, Image as ImageIcon, CheckCircle2, PlayCircle, FileText, Monitor, LayoutTemplate, Layers, Wand2, Calculator, PackageCheck, ListPlus, TrendingUp, TrendingDown, Users, DollarSign, Target, BarChart3, PieChart, AlertTriangle, ArrowRight, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
@@ -17,6 +17,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onWidgetActio
   
   // Track accepted diagnosis items locally to show UI state changes immediately
   const [acceptedDiagnosisItems, setAcceptedDiagnosisItems] = useState<string[]>([]);
+  
+  // Track expanded state for smart report
+  const [isReportExpanded, setIsReportExpanded] = useState(false);
 
   const handleCheckboxChange = (value: string) => {
     setLocalData((prev: any) => {
@@ -39,6 +42,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onWidgetActio
       onWidgetAction?.('diagnosis_all_applied', true);
     } else {
       onWidgetAction?.('diagnosis_item_applied', id);
+    }
+  };
+  
+  const toggleReport = () => {
+    const newState = !isReportExpanded;
+    setIsReportExpanded(newState);
+    if (newState) {
+      onWidgetAction?.('report_expanded', true);
     }
   };
 
@@ -488,6 +499,113 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onWidgetActio
                 </div>
               )
             })}
+          </div>
+        );
+
+      case 'smart-report':
+        return (
+          <div className="mt-3 w-full max-w-lg bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300">
+             {/* Header / Summary (Always Visible) */}
+             <div className="p-4 bg-gradient-to-r from-blue-50 to-white">
+                <div className="flex justify-between items-start mb-2">
+                   <div>
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 mb-1">周报</span>
+                      <h3 className="text-sm font-bold text-gray-900">11.18 - 11.24 经营周报</h3>
+                   </div>
+                   <button
+                     onClick={toggleReport}
+                     className="text-xs text-blue-600 font-medium hover:underline flex items-center"
+                   >
+                     {isReportExpanded ? '收起' : '展开详情'}
+                     {isReportExpanded ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                   </button>
+                </div>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                   李老板您好！上周表现<span className="font-bold text-green-600">非常出色</span>。
+                   店铺总GMV <span className="font-bold text-gray-900">8.5万元</span> (环比 <span className="text-green-600">↑15%</span>)，广告ROI <span className="font-bold text-gray-900">4.5</span>。
+                </p>
+                {/* Highlights in collapsed view */}
+                {!isReportExpanded && (
+                   <div className="mt-3 pt-3 border-t border-blue-100 text-xs space-y-1">
+                      <div className="flex items-start gap-1.5">
+                         <TrendingUp size={12} className="text-green-500 mt-0.5"/>
+                         <span className="text-gray-600">策略生效：<span className="text-gray-900 font-medium">分时出价+素材替换</span> 贡献 +9000元 GMV。</span>
+                      </div>
+                      <div className="flex items-start gap-1.5">
+                         <AlertTriangle size={12} className="text-orange-500 mt-0.5"/>
+                         <span className="text-gray-600">潜在问题：<span className="text-gray-900 font-medium">用户复购率</span> 环比下降 5%。</span>
+                      </div>
+                   </div>
+                )}
+             </div>
+
+             {/* Expanded Content */}
+             {isReportExpanded && (
+               <div className="p-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                  {/* Radar Chart Section */}
+                  <div className="mb-6">
+                     <h4 className="text-xs font-bold text-gray-500 uppercase mb-3">核心指标对比 (VS 行业优秀)</h4>
+                     <div className="flex items-center justify-center bg-gray-50 rounded-lg relative py-4">
+                        {/* Simple SVG Radar Chart */}
+                        <svg width="200" height="160" viewBox="0 0 200 160">
+                           {/* Legend */}
+                           <g transform="translate(140, 10)">
+                             <rect width="8" height="8" fill="#3b82f6" rx="2" />
+                             <text x="12" y="8" fontSize="8" fill="#666">我的</text>
+                             <rect y="12" width="8" height="8" fill="#e5e7eb" rx="2" />
+                             <text x="12" y="20" fontSize="8" fill="#666">行业</text>
+                           </g>
+                           
+                           {/* Axes */}
+                           <g transform="translate(100, 90)">
+                              {/* Background Pentagon (Industry) */}
+                              <path d="M0,-60 L57,-18 L35,48 L-35,48 L-57,-18 Z" fill="none" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="4 2"/>
+                              {/* Store Pentagon (Blue) */}
+                              {/* Top (GPM): High | Right (ROI): High | BotRight (Conv): Med | BotLeft (Ret): Low | Left (Traffic): High */}
+                              <path d="M0,-70 L60,-20 L30,40 L-15,20 L-50,-20 Z" fill="rgba(59, 130, 246, 0.1)" stroke="#3b82f6" strokeWidth="2"/>
+                              
+                              {/* Points */}
+                              <circle cx="0" cy="-70" r="3" fill="#3b82f6" />
+                              <circle cx="60" cy="-20" r="3" fill="#3b82f6" />
+                              <circle cx="30" cy="40" r="3" fill="#3b82f6" />
+                              <circle cx="-15" cy="20" r="3" fill="#f97316" stroke="white" strokeWidth="2"/> {/* Low Retention Warning */}
+                              <circle cx="-50" cy="-20" r="3" fill="#3b82f6" />
+                              
+                              {/* Labels */}
+                              <text x="0" y="-78" fontSize="10" textAnchor="middle" fill="#4b5563">GPM</text>
+                              <text x="70" y="-20" fontSize="10" textAnchor="start" fill="#4b5563">ROI</text>
+                              <text x="40" y="55" fontSize="10" textAnchor="middle" fill="#4b5563">转化</text>
+                              <text x="-40" y="55" fontSize="10" textAnchor="middle" fill="#ef4444" fontWeight="bold">复购</text>
+                              <text x="-70" y="-20" fontSize="10" textAnchor="end" fill="#4b5563">流量</text>
+                           </g>
+                        </svg>
+                     </div>
+                     <div className="mt-3 text-xs text-center text-gray-600">
+                        <span className="font-medium text-gray-900">GPM</span> 和 <span className="font-medium text-gray-900">ROI</span> 表现优异，但 <span className="font-bold text-red-600">复购率</span> 明显低于行业均值。
+                     </div>
+                  </div>
+
+                  {/* Opportunity Section */}
+                  <div className="bg-orange-50 border border-orange-100 rounded-lg p-3">
+                     <div className="flex items-center gap-2 mb-2">
+                        <Lightbulb size={16} className="text-orange-500" />
+                        <span className="text-sm font-bold text-orange-800">市场新机遇：跨年套餐预售</span>
+                     </div>
+                     <p className="text-xs text-gray-700 mb-3 leading-relaxed">
+                        AI监测到“跨年”、“聚餐”搜索量暴涨 <span className="font-bold text-red-500">300%</span>。
+                        建议立即上线「跨年欢聚4人套餐」。素材已生成。
+                     </p>
+                     <div className="flex gap-2">
+                        <button className="flex-1 py-1.5 bg-orange-500 text-white rounded text-xs font-medium hover:bg-orange-600 shadow-sm shadow-orange-200">
+                           立即创建套餐
+                        </button>
+                        <button className="flex-1 py-1.5 bg-white border border-orange-200 text-orange-600 rounded text-xs font-medium hover:bg-orange-50">
+                           查看AI素材
+                        </button>
+                     </div>
+                  </div>
+               </div>
+             )}
           </div>
         );
 
