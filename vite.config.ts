@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
+      // ⚠️ 核心修改：添加了 base 路径，对应你的 GitHub 仓库名
+      base: "/douyin_laike_agent/",
+      
       server: {
         port: 3000,
         host: '0.0.0.0',
